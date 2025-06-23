@@ -1,14 +1,24 @@
 import discord
 from discord.ext import commands
 from config import token
-import re  # Link kontrolü için gerekli
+import re
+import random  # Dedikodu için rastgele cümle
 
-# Gerekli izinleri belirleme
 intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 
 bot = commands.Bot(command_prefix='?', intents=intents)
+
+dedikodular = [
+    "Zaten çok tuhaf davranıyordu...",
+    "Kimse onu gerçekten sevmezdi zaten.",
+    "Bence bu ban geç bile kaldı.",
+    "Sürekli link atıyordu, cık cık...",
+    "Sunucu huzur buldu be!",
+    "Geçen gün de garip garip konuşuyordu...",
+    "Artık rahat uyuyabiliriz.",
+]
 
 @bot.event
 async def on_ready():
@@ -27,6 +37,7 @@ async def ban(ctx, member: discord.Member = None):
         else:
             await ctx.guild.ban(member)
             await ctx.send(f"Kullanıcı {member.name} banlandı.")
+            await ctx.send(random.choice(dedikodular))  # Dedikodu mesajı
     else:
         await ctx.send("Bu komut banlamak istediğiniz kullanıcıyı etiketlemelidir. Örnek: `?ban @user`")
 
@@ -42,16 +53,16 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    # LINK KONTROLÜ VE BANLAMA
     link_pattern = r"https?://\S+"
     if re.search(link_pattern, message.content):
         try:
             await message.author.ban(reason="Mesajda link paylaştığı için otomatik banlandı.")
             await message.channel.send(f"{message.author.mention} link paylaştığı için banlandı.")
+            await message.channel.send(random.choice(dedikodular))  # Dedikodu burada da!
         except discord.Forbidden:
             await message.channel.send("Bu kullanıcıyı banlamak için yetkim yok.")
-        return  # Link atan kullanıcı için başka işlem yapma
+        return
 
-    await bot.process_commands(message)  # Komutların çalışabilmesi için
+    await bot.process_commands(message)
 
 bot.run(token)
